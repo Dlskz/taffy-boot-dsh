@@ -1,0 +1,578 @@
+/* ============================================================
+ * 永雏塔菲 × DeepSeek Harness 启动动画 —— 样式
+ * 所有选择器均以 #taffy-boot 作用域收口，注入宿主页面时
+ * 不会污染 DSH 自身样式；animation 名称统一 tb- 前缀。
+ * ============================================================ */
+
+#taffy-boot {
+  /* ---- 设计变量 ---- */
+  --tb-pink: #ff8fba;
+  --tb-pink-deep: #ef6a9b;
+  --tb-pink-soft: #ffd3e4;
+  --tb-pink-mist: #ffe9f2;
+  --tb-cream: #fffafd;
+  --tb-cyan: #8fd9ff;
+  --tb-plum: #5b2f47;
+  --tb-plum-soft: #8a5a74;
+  --tb-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --tb-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+  --tb-ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
+  --tb-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--tb-plum);
+  font-family: var(--tb-font);
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+  transition: opacity 0.42s var(--tb-ease-out);
+}
+#taffy-boot.tb-in { opacity: 1; }
+#taffy-boot.tb-out {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 0.6s;
+}
+
+/* ---------- 背景：粉雾天空 ---------- */
+#taffy-boot .tb-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #fff3f9 0%, #ffe4f0 34%, #f9d3e6 62%, #efc4dd 100%),
+    linear-gradient(160deg, #fff6fb 0%, #ffd9ea 55%, #ffc4df 100%);
+  background-blend-mode: screen;
+}
+#taffy-boot .tb-backdrop::before,
+#taffy-boot .tb-backdrop::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.75;
+}
+#taffy-boot .tb-backdrop::before {
+  width: 46vmax; height: 46vmax;
+  left: -14vmax; top: -18vmax;
+  background: radial-gradient(circle, #ffd1e6 0%, rgba(255, 209, 230, 0) 68%);
+  animation: tb-drift-a 16s ease-in-out infinite alternate;
+}
+#taffy-boot .tb-backdrop::after {
+  width: 40vmax; height: 40vmax;
+  right: -12vmax; bottom: -16vmax;
+  background: radial-gradient(circle, #c8ecff 0%, rgba(200, 236, 255, 0) 66%);
+  animation: tb-drift-b 19s ease-in-out infinite alternate;
+}
+
+/* 细颗粒噪点，避免大面积渐变出现色带 */
+#taffy-boot .tb-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: repeating-conic-gradient(
+    rgba(91, 47, 71, 0.55) 0% 25%,
+    rgba(255, 255, 255, 0.4) 0% 50%
+  );
+  background-size: 3px 3px;
+  mix-blend-mode: soft-light;
+}
+
+/* ---------- 粒子画布 ---------- */
+#taffy-boot .tb-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- 主卡片 ---------- */
+#taffy-boot .tb-card {
+  z-index: 2;
+  position: relative;
+  width: min(780px, 92vw);
+  padding: 22px 30px 22px;
+  border-radius: 32px;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 245, 250, 0.88) 100%);
+  box-shadow:
+    0 42px 90px -34px rgba(214, 88, 143, 0.55),
+    0 12px 30px -12px rgba(120, 44, 78, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
+  transform: scale(0.93) translateY(14px);
+  opacity: 0;
+  transition:
+    transform 0.62s var(--tb-ease-spring),
+    opacity 0.42s var(--tb-ease-out);
+}
+#taffy-boot.tb-in .tb-card {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+#taffy-boot.tb-out .tb-card {
+  transform: scale(0.975) translateY(-8px);
+  transition-duration: 0.5s;
+}
+
+/* 卡片四角的小闪星装饰 */
+#taffy-boot .tb-spark {
+  position: absolute;
+  width: 14px; height: 14px;
+  pointer-events: none;
+  opacity: 0;
+  animation: tb-twinkle 2.6s ease-in-out infinite;
+}
+#taffy-boot .tb-spark::before,
+#taffy-boot .tb-spark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 46%, #fff 46% 54%, transparent 54%),
+    linear-gradient(0deg, transparent 46%, #fff 46% 54%, transparent 54%);
+  border-radius: 2px;
+}
+#taffy-boot .tb-spark.s1 { top: 14px; left: 18px; animation-delay: 0.2s; }
+#taffy-boot .tb-spark.s2 { top: 18px; right: 22px; animation-delay: 0.9s; }
+#taffy-boot .tb-spark.s3 { bottom: 16px; left: 26px; animation-delay: 1.5s; }
+#taffy-boot .tb-spark.s4 { bottom: 20px; right: 16px; animation-delay: 2.1s; }
+
+/* ---------- 顶部品牌行 ---------- */
+#taffy-boot .tb-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 2px 16px;
+  border-bottom: 1px solid rgba(214, 88, 143, 0.12);
+  margin-bottom: 18px;
+}
+#taffy-boot .tb-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--tb-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--tb-plum-soft);
+}
+#taffy-boot .tb-brand-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--tb-pink-deep);
+  box-shadow: 0 0 0 3px rgba(239, 106, 155, 0.16);
+  animation: tb-pulse 1.8s ease-in-out infinite;
+}
+#taffy-boot .tb-x {
+  font-size: 12px;
+  color: rgba(91, 47, 71, 0.35);
+}
+#taffy-boot .tb-tag {
+  padding: 3px 10px 4px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--tb-pink-deep), var(--tb-pink));
+  box-shadow: 0 4px 12px -4px rgba(239, 106, 155, 0.7);
+}
+#taffy-boot .tb-spacer { flex: 1; }
+#taffy-boot .tb-hint {
+  font-size: 11px;
+  color: rgba(91, 47, 71, 0.42);
+  letter-spacing: 0.04em;
+  transition: opacity 0.3s;
+}
+
+/* ---------- 主体两栏 ---------- */
+#taffy-boot .tb-body {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+/* 立绘舞台（4:5 竖版，兼顾全身立绘与近距离头像） */
+#taffy-boot .tb-stage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 28px;
+  overflow: hidden;
+  cursor: pointer;
+  background:
+    radial-gradient(120% 100% at 50% 0%, #fff 0%, #ffeef6 55%, #ffdcea 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 18px 34px -18px rgba(214, 88, 143, 0.45);
+  transform: scale(0.9) rotate(-2deg);
+  opacity: 0;
+  transition:
+    transform 0.7s var(--tb-ease-spring),
+    opacity 0.42s var(--tb-ease-out);
+  user-select: none;
+  -webkit-user-select: none;
+}
+#taffy-boot.tb-in .tb-stage {
+  transform: scale(1) rotate(0deg);
+  opacity: 1;
+  transition-delay: 0.12s;
+}
+#taffy-boot .tb-stage:active { transform: scale(0.975); }
+#taffy-boot .tb-stage.tb-bonk {
+  animation: tb-bonk 0.42s var(--tb-ease-spring);
+}
+
+/* 舞台内立绘层（图片轮播时叠加，透明时露出占位角色） */
+#taffy-boot .tb-photo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+#taffy-boot .tb-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 32%;
+  opacity: 0;
+  transition: opacity 0.9s var(--tb-ease-out);
+  animation: tb-kenburns 9s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+#taffy-boot .tb-photo img.tb-active { opacity: 1; }
+
+/* 顶部柔光，让照片与卡片衔接更自然 */
+#taffy-boot .tb-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, transparent 26%, transparent 72%, rgba(255, 236, 245, 0.55) 100%);
+  pointer-events: none;
+}
+
+#taffy-boot .tb-stage-badge {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 3;
+  padding: 4px 11px 5px;
+  border-radius: 999px;
+  font-family: var(--tb-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #fff;
+  background: rgba(91, 47, 71, 0.42);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* 占位角色（无图片时展示） */
+#taffy-boot .tb-mascot {
+  width: 82%;
+  height: 82%;
+  animation: tb-float 3.4s ease-in-out infinite;
+  filter: drop-shadow(0 16px 18px rgba(214, 88, 143, 0.28));
+}
+#taffy-boot .tb-mascot .tb-eye {
+  animation: tb-blink 4.2s var(--tb-ease-out) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+#taffy-boot .tb-mascot .tb-ahoge { transform-origin: 50% 100%; transform-box: fill-box; animation: tb-wiggle 2.4s ease-in-out infinite; }
+#taffy-boot .tb-mascot .tb-bow { transform-origin: 50% 50%; transform-box: fill-box; animation: tb-wiggle 3.1s ease-in-out infinite reverse; }
+
+/* 无图片时的提示（仅预览模式） */
+#taffy-boot .tb-empty-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 46px;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--tb-plum-soft);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 6px 16px -8px rgba(214, 88, 143, 0.5);
+  white-space: nowrap;
+  animation: tb-fade-up 0.8s 0.9s both;
+}
+#taffy-boot .tb-empty-hint code {
+  font-family: var(--tb-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(239, 106, 155, 0.12);
+  color: var(--tb-pink-deep);
+}
+
+/* 点击彩蛋：飘出的爱心 */
+#taffy-boot .tb-heart {
+  position: absolute;
+  z-index: 5;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(140deg, #ff9ec4, #ff6f9f);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21s-9-5.7-9-12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 21 9c0 6.3-9 12-9 12z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21s-9-5.7-9-12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 21 9c0 6.3-9 12-9 12z'/></svg>") center / contain no-repeat;
+  animation: tb-heart-fly 1.15s var(--tb-ease-out) forwards;
+}
+
+/* ---------- 右侧信息区 ---------- */
+#taffy-boot .tb-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* 对话气泡 */
+#taffy-boot .tb-bubble {
+  position: relative;
+  min-height: 92px;
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: linear-gradient(150deg, #ffffff 0%, #fff4f9 100%);
+  box-shadow:
+    0 16px 34px -20px rgba(214, 88, 143, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+  font-size: 17px;
+  line-height: 1.62;
+  color: var(--tb-plum);
+  transform: translateY(10px);
+  opacity: 0;
+  transition: transform 0.55s var(--tb-ease-spring), opacity 0.4s;
+}
+#taffy-boot.tb-in .tb-bubble {
+  transform: translateY(0);
+  opacity: 1;
+  transition-delay: 0.28s;
+}
+#taffy-boot .tb-bubble::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 30px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  transform: rotate(45deg);
+  border-radius: 3px;
+  box-shadow: -3px 3px 8px -6px rgba(214, 88, 143, 0.6);
+}
+#taffy-boot .tb-bubble-text { white-space: pre-wrap; }
+#taffy-boot .tb-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.16em;
+  background: var(--tb-pink-deep);
+  animation: tb-caret 0.9s steps(1) infinite;
+}
+
+#taffy-boot .tb-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--tb-plum);
+}
+#taffy-boot .tb-name::before {
+  content: "✧";
+  color: var(--tb-pink-deep);
+  font-size: 13px;
+}
+#taffy-boot .tb-name-sub {
+  font-family: var(--tb-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: rgba(91, 47, 71, 0.38);
+}
+
+/* 进度条 */
+#taffy-boot .tb-progress { margin-top: 2px; }
+#taffy-boot .tb-bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(239, 106, 155, 0.14);
+  box-shadow: inset 0 1px 3px rgba(120, 44, 78, 0.18);
+}
+#taffy-boot .tb-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.45) 0 10px, transparent 10px 20px),
+    linear-gradient(90deg, var(--tb-pink), var(--tb-pink-deep));
+  transition: width 0.6s var(--tb-ease-out);
+  box-shadow: 0 0 12px rgba(239, 106, 155, 0.6);
+}
+#taffy-boot .tb-shine {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.85) 50%, transparent 100%);
+  transform: translateX(-120%);
+  animation: tb-shine 2.4s var(--tb-ease-out) infinite;
+  pointer-events: none;
+}
+#taffy-boot .tb-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--tb-plum-soft);
+}
+#taffy-boot .tb-pct {
+  font-family: var(--tb-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tb-pink-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 特性小标签 */
+#taffy-boot .tb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  opacity: 0;
+  animation: tb-fade-up 0.7s 0.7s both;
+}
+#taffy-boot .tb-chip {
+  padding: 3px 9px 4px;
+  border-radius: 7px;
+  font-family: var(--tb-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(91, 47, 71, 0.55);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(239, 106, 155, 0.16);
+}
+
+/* ---------- 跳过按钮 ---------- */
+#taffy-boot .tb-skip {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  padding: 6px 12px 7px;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--tb-font);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--tb-plum-soft);
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: inset 0 0 0 1px rgba(239, 106, 155, 0.18);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: all 0.2s var(--tb-ease-out);
+}
+#taffy-boot .tb-skip:hover {
+  opacity: 1;
+  color: var(--tb-pink-deep);
+  background: #fff;
+  transform: translateY(-1px);
+}
+#taffy-boot .tb-skip:active { transform: translateY(0) scale(0.97); }
+
+/* ---------- 关键帧 ---------- */
+@keyframes tb-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(4vmax, 3vmax, 0) scale(1.08); }
+}
+@keyframes tb-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.04); }
+  to   { transform: translate3d(-5vmax, -2vmax, 0) scale(0.96); }
+}
+@keyframes tb-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(239, 106, 155, 0.16); }
+  50%      { box-shadow: 0 0 0 6px rgba(239, 106, 155, 0.06); }
+}
+@keyframes tb-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.08); }
+}
+@keyframes tb-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-7px) rotate(1.2deg); }
+}
+@keyframes tb-wiggle {
+  0%, 100% { transform: rotate(-6deg); }
+  50%      { transform: rotate(7deg); }
+}
+@keyframes tb-bonk {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.94) rotate(-1.2deg); }
+  70%  { transform: scale(1.03) rotate(0.8deg); }
+  100% { transform: scale(1); }
+}
+@keyframes tb-kenburns {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to   { transform: scale(1.1) translate3d(0, -1.4%, 0); }
+}
+@keyframes tb-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6) rotate(0deg); }
+  50%      { opacity: 0.9; transform: scale(1) rotate(45deg); }
+}
+@keyframes tb-caret {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes tb-shine {
+  0%   { transform: translateX(-120%); }
+  55%  { transform: translateX(320%); }
+  100% { transform: translateX(320%); }
+}
+@keyframes tb-heart-fly {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(0deg); }
+  18%  { opacity: 1; transform: translate(-50%, -60%) scale(1.05) rotate(-8deg); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--tb-dx, 0px)), calc(-50% - 82px)) scale(0.72) rotate(14deg); }
+}
+@keyframes tb-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- 窄窗口适配 ---------- */
+@media (max-width: 720px) {
+  #taffy-boot .tb-card { padding: 18px 20px; border-radius: 26px; }
+  #taffy-boot .tb-body { grid-template-columns: 1fr; gap: 18px; }
+  #taffy-boot .tb-stage { width: min(260px, 70vw); justify-self: center; }
+  #taffy-boot .tb-hint { display: none; }
+  #taffy-boot .tb-bubble { min-height: 0; font-size: 15px; }
+}
+
+/* ---------- 减少动态偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #taffy-boot *,
+  #taffy-boot *::before,
+  #taffy-boot *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.12s !important;
+  }
+}

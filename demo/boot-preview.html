@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>永雏塔菲 × DeepSeek Harness 启动动画 · 预览</title>
+<style>
+  :root {
+    --ink: #f3e9f0;
+    --ink-dim: #b9a2b2;
+    --plum: #241019;
+    --plum-2: #2e1521;
+    --pink: #ff8fba;
+    --pink-deep: #ef6a9b;
+    --line: rgba(255, 143, 186, 0.16);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(120% 90% at 30% 0%, #3a1a2a 0%, #241019 52%, #170a11 100%);
+    color: var(--ink);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ---------- 模拟 DSH 界面（压在动画下方，验证"揭幕"效果） ---------- */
+  .mock {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    opacity: 0.96;
+  }
+  .mock::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(80% 60% at 70% 0%, rgba(255, 143, 186, 0.08), transparent 60%);
+  }
+  .mock-side {
+    border-right: 1px solid var(--line);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .mock-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--ink-dim);
+    padding: 6px 8px 14px;
+  }
+  .mock-brand i {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--pink);
+    box-shadow: 0 0 10px rgba(255, 143, 186, 0.8);
+    display: inline-block;
+  }
+  .mock-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+  }
+  .mock-item.active {
+    background: rgba(255, 143, 186, 0.1);
+    color: #ffd9e8;
+    box-shadow: inset 0 0 0 1px rgba(255, 143, 186, 0.22);
+  }
+  .mock-item .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.65; }
+  .mock-foot {
+    margin-top: auto;
+    padding: 10px;
+    font-size: 10.5px;
+    color: rgba(185, 162, 178, 0.55);
+    border-top: 1px solid var(--line);
+    font-family: "SF Mono", Menlo, monospace;
+    letter-spacing: 0.04em;
+  }
+  .mock-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mock-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .mock-top b {
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .mock-top .pill {
+    margin-left: auto;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: #9be0b0;
+    background: rgba(80, 200, 120, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(80, 200, 120, 0.22);
+  }
+  .mock-chat {
+    flex: 1;
+    padding: 26px clamp(18px, 6vw, 120px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 12%);
+            mask-image: linear-gradient(180deg, transparent 0%, #000 12%);
+  }
+  .mock-msg {
+    max-width: 640px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #e8dae2;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  .mock-msg.me {
+    align-self: flex-end;
+    background: rgba(255, 143, 186, 0.12);
+    color: #ffe6f0;
+    box-shadow: inset 0 0 0 1px rgba(255, 143, 186, 0.18);
+  }
+  .mock-msg .who {
+    display: block;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    color: rgba(255, 143, 186, 0.6);
+    margin-bottom: 5px;
+  }
+
+  /* ---------- 演示控制条 ---------- */
+  .hud {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px 8px 16px;
+    border-radius: 999px;
+    background: rgba(36, 16, 25, 0.72);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    z-index: 5;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+  .hud .sep { width: 1px; height: 16px; background: rgba(255, 255, 255, 0.12); }
+  .hud button {
+    appearance: none;
+    border: 0;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-family: inherit;
+    letter-spacing: 0.04em;
+    color: #ffe6f0;
+    background: linear-gradient(135deg, rgba(239, 106, 155, 0.9), rgba(255, 143, 186, 0.85));
+    box-shadow: 0 8px 20px -10px rgba(239, 106, 155, 0.9);
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .hud button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .hud button:active { transform: translateY(0); }
+  .hud button.ghost {
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    color: var(--ink);
+  }
+  .hud .state { font-family: "SF Mono", Menlo, monospace; letter-spacing: 0.04em; }
+  .hud .badge {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    color: #ffd0e0;
+    background: rgba(255, 143, 186, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 143, 186, 0.22);
+  }
+  .hud .badge.warn { color: #ffd28a; background: rgba(255, 190, 90, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 190, 90, 0.25); }
+  .hud .badge.ok { color: #a7f0bd; background: rgba(90, 220, 140, 0.1); box-shadow: inset 0 0 0 1px rgba(90, 220, 140, 0.22); }
+</style>
+<link rel="stylesheet" href="../lib/splash.css">
+</head>
+<body>
+
+<!-- 模拟的 DSH 聊天界面：动画淡出后露出，用来验证"揭幕"时刻 -->
+<div class="mock" aria-hidden="true">
+  <aside class="mock-side">
+    <div class="mock-brand"><i></i>DEEPSEEK HARNESS</div>
+    <div class="mock-item active"><span class="dot"></span>新会话</div>
+    <div class="mock-item"><span class="dot"></span>塔菲启动动画</div>
+    <div class="mock-item"><span class="dot"></span>主题研究笔记</div>
+    <div class="mock-item"><span class="dot"></span>工作区文件</div>
+    <div class="mock-item"><span class="dot"></span>设置</div>
+    <div class="mock-foot">dsh · local model runtime</div>
+  </aside>
+  <main class="mock-main">
+    <div class="mock-top">
+      <b>塔菲启动动画</b>
+      <span>·</span>
+      <span>会话已就绪</span>
+      <span class="pill">READY</span>
+    </div>
+    <div class="mock-chat">
+      <div class="mock-msg"><span class="who">TAFFY</span>关注永雏塔菲谢谢喵～ 启动动画已经准备好啦，今天也要一起写代码哦！</div>
+      <div class="mock-msg me"><span class="who">YOU</span>帮我把 DSH 的启动界面换成塔菲主题</div>
+      <div class="mock-msg"><span class="who">TAFFY</span>收到！动画会在窗口加载的瞬间播放，随时可以按 Esc 跳过，或者点击"还原原皮"一键恢复。</div>
+    </div>
+  </main>
+</div>
+
+<!-- 演示控制条 -->
+<div class="hud">
+  <span class="state" id="hudState">动画播放中…</span>
+  <span class="sep"></span>
+  <span class="badge" id="hudAssets">素材：检测中</span>
+  <span class="sep"></span>
+  <button type="button" class="ghost" id="btnSkip">跳过</button>
+  <button type="button" id="btnReplay">重播动画</button>
+</div>
+
+<script src="manifest.js" onerror="window.TAFFY_BOOT_MANIFEST=[]"></script>
+<script>
+  (function () {
+    // manifest 中的文件名相对 lib/assets/，这里解析为绝对地址
+    var base = new URL('../lib/assets/', location.href);
+    var list = (window.TAFFY_BOOT_MANIFEST || []).filter(Boolean);
+    window.TAFFY_BOOT_IMAGES = list.map(function (p) { return new URL(p, base).href; });
+
+    window.__TAFFY_BOOT_CONFIG__ = {
+      preview: true,
+      playOnce: false,
+      auto: true,
+      duration: 9000
+    };
+
+    var stateEl = document.getElementById('hudState');
+    var assetsEl = document.getElementById('hudAssets');
+
+    function setState(text) { stateEl.textContent = text; }
+    function setAssets() {
+      if (window.TAFFY_BOOT_IMAGES.length) {
+        assetsEl.textContent = '素材：' + window.TAFFY_BOOT_IMAGES.length + ' 张图片';
+        assetsEl.className = 'badge ok';
+      } else {
+        assetsEl.textContent = '素材：占位角色';
+        assetsEl.className = 'badge warn';
+      }
+    }
+    setAssets();
+
+    document.getElementById('btnSkip').addEventListener('click', function () {
+      if (window.__TAFFY_BOOT__) window.__TAFFY_BOOT__.skip();
+    });
+    document.getElementById('btnReplay').addEventListener('click', function () {
+      if (window.__TAFFY_BOOT__) window.__TAFFY_BOOT__.destroy();
+      setTimeout(function () {
+        if (window.__TAFFY_BOOT_PLAY__) window.__TAFFY_BOOT_PLAY__();
+        setState('动画播放中…');
+      }, 80);
+    });
+
+    window.addEventListener('taffy-boot:done', function () {
+      setState('动画结束，已露出下方界面');
+    });
+  })();
+</script>
+<script src="../lib/splash.js"></script>
+</body>
+</html>

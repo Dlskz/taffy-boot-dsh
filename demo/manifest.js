@@ -1,0 +1,21 @@
+window.TAFFY_BOOT_MANIFEST = [
+  "7347.jpg",
+  "7348.jpg",
+  "7349.jpg",
+  "7350.jpg",
+  "7351.jpg",
+  "7352.jpg",
+  "7353.jpg",
+  "7355.jpg",
+  "7356.jpg",
+  "7358.jpg",
+  "7361.jpg",
+  "7362.jpg",
+  "7363.jpg",
+  "7364.jpg",
+  "7365.jpg",
+  "collage-banner.jpg",
+  "collage-grid.jpg",
+  "collage-polaroid.jpg",
+  "collage-strip.jpg"
+];

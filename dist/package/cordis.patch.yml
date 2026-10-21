@@ -1,0 +1,6 @@
+# dsh-taffy-boot bundle patch
+# 让本插件作为 bundle 层挂进 profile；安装：
+#   dsh plugin --profile desktop add file:<path>/dsh-taffy-boot-1.0.0.tgz
+- insert:
+    - id: dsh-taffy-boot
+      name: dsh-taffy-boot
